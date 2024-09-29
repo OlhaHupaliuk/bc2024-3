@@ -7,7 +7,7 @@ program
    .option('-o, --output <path>', 'шлях до файлу, y якому записуємо результат')
    .option('-d, --display','результат має бути виведено у консоль');
 
-   
+
 program.parse(process.argv)
    
 const options = program.opts();
@@ -33,10 +33,15 @@ fs.readFile(options.input, 'utf8', (err, data) => {
         const jsonData = JSON.parse(data);
         const result = JSON.stringify(jsonData, null, 2);
 
+        const formattedResult = jsonData.map(item => {
+            return `${item.exchangedate}:${item.rate}`;
+        }).join('\n'); 
+        
+
         if(options.display){
             console.log(result);
+            console.log(formattedResult);
         }
-
         if(options.output){
             fs.writeFile(options.output, result, (err) => {
                 if (err) {
