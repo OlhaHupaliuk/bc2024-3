@@ -1,15 +1,13 @@
-const {program} = require('commander');
+const { program } = require('commander');
 const fs = require('fs');
-
 
 program
    .requiredOption('-i, --input <path>', 'шлях до файлу, який даємо для читання')
    .option('-o, --output <path>', 'шлях до файлу, y якому записуємо результат')
-   .option('-d, --display','результат має бути виведено у консоль');
+   .option('-d, --display', 'результат має бути виведено у консоль');
 
+program.parse(process.argv);
 
-program.parse(process.argv)
-   
 const options = program.opts();
 
 function exit(message) {
@@ -18,44 +16,42 @@ function exit(message) {
 }
 
 if (!options.input) {
-    exit("Please, specify input file")
+    exit("Please, specify input file");
 }
 
-if (!fs.existsSync(options.input)){
-    exit("Cannot find input file")
+if (!fs.existsSync(options.input)) {
+    exit("Cannot find input file");
 }
 
 fs.readFile(options.input, 'utf8', (err, data) => {
-    if (err){
-        exit('Error')
+    if (err) {
+        exit('Error reading file');
     }
     try {
+        // Парсимо json дані з файлу
         const jsonData = JSON.parse(data);
-        const result = JSON.stringify(jsonData, null, 2);
 
+        // Форматуємо дані у вигляді дата:курс
         const formattedResult = jsonData.map(item => {
             return `${item.exchangedate}:${item.rate}`;
         }).join('\n'); 
-        
 
-        if(options.display){
-            console.log(result);
+        // Виводимо у консоль
+        if (options.display) {
             console.log(formattedResult);
         }
-        if(options.output){
-            fs.writeFile(options.output, result, (err) => {
+
+        // Записуємо у файл
+        if (options.output) {
+            fs.writeFile(options.output, formattedResult, (err) => {
                 if (err) {
-                    exit("Err")
+                    exit("Error writing to file");
+                } else {
+                    console.log(`Results are successfully saved into ${options.output}`);
                 }
-                else{
-                    console.log('Results are succesfully saved into file ' + options.output);
-                }
-            })
+            });
         }
-    }
-    catch (err){
-        exit("Error during parsing json")
+    } catch (err) {
+        exit("Error during parsing JSON");
     }
 });
-
-
