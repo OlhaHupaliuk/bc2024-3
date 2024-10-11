@@ -2,7 +2,7 @@ const { program } = require('commander');
 const fs = require('fs');
 
 program
-   .requiredOption('-i, --input <path>', 'шлях до файлу, який даємо для читання')
+   .option('-i, --input <path>', 'шлях до файлу, який даємо для читання')
    .option('-o, --output <path>', 'шлях до файлу, y якому записуємо результат')
    .option('-d, --display', 'результат має бути виведено у консоль');
 
@@ -23,35 +23,25 @@ if (!fs.existsSync(options.input)) {
     exit("Cannot find input file");
 }
 
-fs.readFile(options.input, 'utf8', (err, data) => {
-    if (err) {
-        exit('Error reading file');
-    }
-    try {
-        // Парсимо json дані з файлу
-        const jsonData = JSON.parse(data);
+const data = fs.readFileSync(options.input, 'utf8')
 
-        // Форматуємо дані у вигляді дата:курс
-        const formattedResult = jsonData.map(item => {
-            return `${item.exchangedate}:${item.rate}`;
-        }).join('\n'); 
+// Парсимо json дані з файлу
+const jsonData = JSON.parse(data);
 
-        // Виводимо у консоль
-        if (options.display) {
-            console.log(formattedResult);
-        }
+// Форматуємо дані у вигляді дата:курс
+const formattedResult = jsonData.map(item => {
+    return `${item.exchangedate}:${item.rate}`;
+}).join('\n'); 
 
-        // Записуємо у файл
-        if (options.output) {
-            fs.writeFile(options.output, formattedResult, (err) => {
-                if (err) {
-                    exit("Error writing to file");
-                } else {
-                    console.log(`Results are successfully saved into ${options.output}`);
-                }
-            });
-        }
-    } catch (err) {
-        exit("Error during parsing JSON");
-    }
-});
+ // Виводимо у консоль
+if (options.display) {
+    console.log(formattedResult);
+}
+
+
+
+if (options.output){
+    fs.writeFileSync(options.output, formattedResult, 'utf8' )
+    console.log(`Results are successfully saved into ${options.output}`);
+}
+
